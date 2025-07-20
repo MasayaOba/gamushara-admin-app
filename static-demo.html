@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我無沙羅 SNS投稿管理（デモ版）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div class="min-h-screen bg-gray-50">
+        <div class="max-w-4xl mx-auto py-8 px-4">
+            <header class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    我無沙羅 SNS投稿管理
+                </h1>
+                <p class="text-gray-600">
+                    イベント告知・お礼投稿の文章作成と管理
+                </p>
+            </header>
+
+            <div id="app">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h2 class="text-2xl font-bold mb-6">新規投稿作成</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    イベント名 *
+                                </label>
+                                <input
+                                    type="text"
+                                    id="eventName"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="例：刈谷市民文化祭"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    投稿タイプ *
+                                </label>
+                                <select
+                                    id="eventType"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="announcement">イベント告知</option>
+                                    <option value="thanks">お礼・報告</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    日時 *
+                                </label>
+                                <input
+                                    type="text"
+                                    id="eventDate"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="例：2024年12月25日（水）14:00〜"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    場所 *
+                                </label>
+                                <input
+                                    type="text"
+                                    id="eventLocation"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="例：刈谷市総合文化センター"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                運営者からのメッセージ
+                            </label>
+                            <textarea
+                                id="organizerMessage"
+                                rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="イベントへの想いや参加者へのメッセージを入力してください"
+                            ></textarea>
+                        </div>
+
+                        <div class="text-center">
+                            <button
+                                onclick="generateTexts()"
+                                class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-md transition-colors"
+                            >
+                                SNS投稿文を生成
+                            </button>
+                        </div>
+
+                        <div id="results" class="hidden space-y-6">
+                            <div>
+                                <h3 class="text-lg font-medium mb-3">Instagram用文章</h3>
+                                <div class="bg-gray-50 p-4 rounded-md">
+                                    <pre id="instagramText" class="whitespace-pre-wrap text-sm"></pre>
+                                </div>
+                                <button onclick="copyText('instagramText')" class="mt-2 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">
+                                    コピー
+                                </button>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-medium mb-3">X (Twitter)用文章</h3>
+                                <div class="bg-gray-50 p-4 rounded-md">
+                                    <pre id="twitterText" class="whitespace-pre-wrap text-sm"></pre>
+                                </div>
+                                <button onclick="copyText('twitterText')" class="mt-2 text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">
+                                    コピー
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateTexts() {
+            const eventName = document.getElementById('eventName').value;
+            const eventDate = document.getElementById('eventDate').value;
+            const eventLocation = document.getElementById('eventLocation').value;
+            const eventType = document.getElementById('eventType').value;
+            const organizerMessage = document.getElementById('organizerMessage').value;
+
+            if (!eventName || !eventDate || !eventLocation) {
+                alert('イベント名、日時、場所を入力してください');
+                return;
+            }
+
+            const instagramText = generateInstagramText({
+                eventName, eventDate, eventLocation, eventType, organizerMessage
+            });
+            
+            const twitterText = generateTwitterText(instagramText);
+
+            document.getElementById('instagramText').textContent = instagramText;
+            document.getElementById('twitterText').textContent = twitterText;
+            document.getElementById('results').classList.remove('hidden');
+        }
+
+        function generateInstagramText(data) {
+            const { eventName, eventDate, eventLocation, eventType, organizerMessage } = data;
+            
+            if (eventType === 'announcement') {
+                return `🎌✨ イベント告知 ✨🎌
+
+【${eventName}】
+
+📅 日時：${eventDate}
+📍 場所：${eventLocation}
+
+${organizerMessage}
+
+応援合戦の魅力を一緒に伝えませんか？
+皆さまのご参加をお待ちしております！
+
+一生懸命はダサくない。
+むしろこんなにもかっこいいんだってことを伝えたい。
+
+#青春応援団我無沙羅 #応援合戦 #刈谷 #青春 #一生懸命 #${eventName.replace(/\s/g, '')}`;
+            } else {
+                return `🎌✨ ありがとうございました ✨🎌
+
+【${eventName}】
+
+📅 ${eventDate}
+📍 ${eventLocation}
+
+${organizerMessage}
+
+皆さまのおかげで素晴らしいイベントとなりました。
+応援合戦の魅力を少しでもお伝えできていれば幸いです。
+
+感動するほどの応援合戦を。
+これからも一生懸命を大切に、活動を続けてまいります。
+
+#青春応援団我無沙羅 #応援合戦 #刈谷 #青春 #感謝 #${eventName.replace(/\s/g, '')}`;
+            }
+        }
+
+        function generateTwitterText(instagramText) {
+            const lines = instagramText.split('\n').filter(line => line.trim());
+            const eventInfo = lines.slice(0, 5).join('\n');
+            const hashtags = lines[lines.length - 1];
+            
+            return `${eventInfo}
+
+${hashtags}`;
+        }
+
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('クリップボードにコピーしました');
+            }).catch(err => {
+                console.error('コピーに失敗しました:', err);
+            });
+        }
+    </script>
+</body>
+</html>
